@@ -60,7 +60,7 @@ function sendSpecifiedWeek(stage, week, message) {
     });
 }
 
-// Offset will be added to the week that this method finds to be the current in order to return next or previous week's schedule
+// Offset will be added to the current week in order to return next or previous week's schedule
 function sendCurrentWeek(message, offset) {
     const request = require('request');
     let stage;
