@@ -1,20 +1,22 @@
 exports.run = (params, message, client) => {
     if (params !== undefined && params.length > 0) {
         // Check if user is requesting schedule for a specific week
-        if (!params[0].isNaN) {
+        if (!isNaN(params[0])) {
             // Make sure there's a week parameter
             if (params.length > 1) {
-                if (!params[1].isNaN) {
+                if (!isNaN(params[1])) {
                     let stage = params[0] - 1;
                     let week = params[1] - 1;
                     // Perform an http request and send the appropriate data
                     sendSpecifiedWeek(stage, week, message);
                 } else {
-                    message.channel.send('Error: please provide a week');
+                    message.channel.send('Error: improper week parameter');
                 }
             } else {
                 message.channel.send('Error: please provide a week');
             }
+        } else {
+            message.channel.send('Error: improper parameters provided');
         }
     }
     else {
@@ -54,7 +56,6 @@ function sendSpecifiedWeek(stage, week, message) {
             let matchDay = matchDate.getDay();
             if (currentDay != matchDay) {
                 currentDay = matchDay;
-                console.log(days[currentDay]);
                 msg = msg.concat('\n\n' + days[currentDay] + ':');
             }
             
