@@ -13,13 +13,14 @@ client.on('message', (message) => {
         
         try {
             let commandFile = require(`./commands/${command}.js`);
-            commandFile.run();
+            commandFile.run(params, message, client);
         } catch (e) {
             if (command) {
                 message.channel.send(`Error: command '${command}' not found`);
             } else {
                 message.channel.send('Error: please enter a command');
             }
+            console.log(e);
         }
     }
 });
