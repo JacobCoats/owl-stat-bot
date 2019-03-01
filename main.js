@@ -16,7 +16,7 @@ client.on('message', (message) => {
             commandFile.run(params, message, client);
         } catch (e) {
             if (command) {
-                message.channel.send(`Error: command '${command}' not found`);
+                message.channel.send('Error: something went wrong. Check the console for more detail');
             } else {
                 message.channel.send('Error: please enter a command');
             }
