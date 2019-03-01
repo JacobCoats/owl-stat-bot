@@ -1,4 +1,5 @@
 exports.run = (params, message, client) => {
+    // Decide which method to call based on the parameters provided
     if (params !== undefined && params.length > 0) {
         // Check if user is requesting schedule for a specific week
         if (!isNaN(params[0])) {
@@ -15,12 +16,19 @@ exports.run = (params, message, client) => {
             } else {
                 message.channel.send('Error: please provide a week');
             }
+        } else if (params[0] === 'next') {
+            // Send next week's schedule
+            sendCurrentWeek(message, 1);
+        } else if (params[0] === 'previous') {
+            // Send previous week's schedule
+            sendCurrentWeek(message, -1);
         } else {
             message.channel.send('Error: improper parameters provided');
         }
     }
     else {
-        message.channel.send('Error: no parameters provided');
+        // If no parameters were included, send current week's schedule
+        sendCurrentWeek(message, 0);
     }
 }
 
@@ -47,27 +55,76 @@ function sendSpecifiedWeek(stage, week, message) {
             return;
         }
 
-        let msg = 'Stage ' + (stage + 1) + ', Week ' + (week + 1);
-        
-        let currentDay = -1;
-        for (var m in body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches']) {
-            // Every time the day of the week that the current match occurs on differs from the one before it, print the new one
-            let matchDate = new Date(body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['startDate']);
-            let matchDay = matchDate.getDay();
-            if (currentDay != matchDay) {
-                currentDay = matchDay;
-                msg = msg.concat('\n\n' + days[currentDay] + ', ' + months[matchDate.getMonth()] + ' ' + matchDate.getDate() + ':');
-            }
-            
-            let matchData = '\n' + 
-                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'] +
-                ' vs. ' + 
-                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'];
-            
-            msg = msg.concat(matchData);
-        }
+        let msg = constructMessage(stage, week, body);
         message.channel.send(msg);
     });
+}
+
+// Offset will be added to the week that this method finds to be the current in order to return next or previous week's schedule
+function sendCurrentWeek(message, offset) {
+    const request = require('request');
+    let stage;
+    let week;
+    let currentDate = new Date().getTime();
+    
+    request.get({
+        url: 'https://api.overwatchleague.com/schedule',
+        json: true
+    }, function (err, res, body) {
+        if (err) {
+            message.channel.send('Error: something went wrong while retrieving the schedule.')
+            console.log('error: ' + error);
+            console.log('response: ' + response.statusCode);           
+        }
+        
+        // Iterate through each stage and figure out which one is current
+        for(i = 0; i < Object.keys(body['data']['stages']).length; i++) {
+            for (j = 0; j < Object.keys(body['data']['stages'][`${i}`]['weeks']).length; j++) {
+                if (currentDate > body['data']['stages'][`${i}`]['weeks'][`${j}`]['startDate'] &&
+                    currentDate < body['data']['stages'][`${i}`]['weeks'][`${j}`]['endDate']) {
+                    stage = i;
+                    week = j;
+                    break;
+                }
+            }
+        }
+        
+        week += offset;
+        
+        if (week === undefined || stage === undefined) {
+            message.channel.send(
+                'There are no games during this week. If you want the schedule for a specific week, ' +
+                'please include a stage and week number.');
+            return;
+        }
+        
+        let msg = constructMessage(stage, week, body);
+        message.channel.send(msg);
+    });
+}
+
+function constructMessage(stage, week, body) {
+    let msg = '**Stage ' + (stage + 1) + ', Week ' + (week + 1) + '**';
+
+    let currentDay = -1;
+    for (var m in body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches']) {
+        // Every time the day of the week that the current match occurs on differs from the one before it, print the new one
+        let matchDate = new Date(body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['startDate']);
+        let matchDay = matchDate.getDay();
+        if (currentDay != matchDay) {
+            currentDay = matchDay;
+            msg = msg.concat('\n\n__' + days[currentDay] + ', ' + months[matchDate.getMonth()] + ' ' + matchDate.getDate() + ':__');
+        }
+
+        let matchData = '\n' + 
+            body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'] +
+            ' vs. ' + 
+            body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'];
+
+        msg = msg.concat(matchData);
+    }
+    
+    return msg;
 }
 
 let days = {
