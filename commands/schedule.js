@@ -1,38 +1,50 @@
-exports.run = (params, message, client) => {
-    // Decide which method to call based on the parameters provided
-    if (params !== undefined && params.length > 0) {
-        // Check if user is requesting schedule for a specific week
-        if (!isNaN(params[0])) {
-            // Make sure there's a week parameter
-            if (params.length > 1) {
-                if (!isNaN(params[1])) {
-                    let stage = params[0] - 1;
-                    let week = params[1] - 1;
-                    // Perform an http request and send the appropriate data
-                    sendSpecifiedWeek(stage, week, message);
-                } else {
-                    message.channel.send('Error: improper week parameter');
-                }
-            } else {
-                message.channel.send('Error: please provide a week');
-            }
-        } else if (params[0] === 'next') {
-            // Send next week's schedule
-            sendCurrentWeek(message, 1);
-        } else if (params[0] === 'previous') {
-            // Send previous week's schedule
-            sendCurrentWeek(message, -1);
+const teams = require('../teams.json');
+
+exports.run = (params, message, client) => {   
+    let teamRequest = '';
+
+    // Check to see if the message specifies a team
+    for (i = 0; i < params.length; i++) {
+        if (!isNaN(params[i]) || params[i] === 'next' || params[i] === 'previous') {
+            break;
+        } else if (i == 0) {
+            teamRequest += params[i];
         } else {
-            message.channel.send('Error: improper parameters provided');
+            teamRequest += ' ' + params[i];
         }
     }
-    else {
-        // If no parameters were included, send current week's schedule
-        sendCurrentWeek(message, 0);
+
+    // If there wasn't a team request OR the team name that was provided exists
+    if (!teamRequest || teams[teamRequest]) {
+        if (i === params.length) {
+            // If there are no other parameters, send current week's schedule
+            sendCurrentWeek(message, 0, teams[teamRequest]);
+        } else if (!isNaN(params[i])) {
+            // If this parameter is a number, make sure that the next one is also a number, then return the schedule for that stage and week
+            if (i + 1 <= params.length) {
+                if (!isNaN(params[i + 1])) {
+                    let stage = params[i] - 1;
+                    let week = params[i + 1] - 1;
+                    sendSpecifiedWeek(stage, week, message, teams[teamRequest]);
+                } else {
+                    message.channel.send('Error: improper weeks parameter');
+                }
+            } else {
+                message.channel.send('Error: please provide a weeks parameter');
+            }
+        } else if (params[i] === 'next') {
+            // Pass 1 as offset if we're looking for next week's schedule since offset will be added to whichever week the method finds to be current
+            sendCurrentWeek(message, 1, teams[teamRequest]);
+        } else if (params[i] === 'previous') {
+            // Pass -1 as offset if we're looking for previous week's schedule
+            sendCurrentWeek(message, -1, teams[teamRequest]);
+        }
+    } else {
+        message.channel.send('Error: that team doesn\'t exist');
     }
 }
 
-function sendSpecifiedWeek(stage, week, message) {
+function sendSpecifiedWeek(stage, week, message, teamId) {
     const request = require('request');
     
     request.get({
@@ -55,13 +67,13 @@ function sendSpecifiedWeek(stage, week, message) {
             return;
         }
 
-        let msg = constructMessage(stage, week, body);
+        let msg = constructMessage(stage, week, body, teamId);
         message.channel.send(msg);
     });
 }
 
 // Offset will be added to the current week in order to return next or previous week's schedule
-function sendCurrentWeek(message, offset) {
+function sendCurrentWeek(message, offset, teamId) {
     const request = require('request');
     let stage;
     let week;
@@ -89,6 +101,7 @@ function sendCurrentWeek(message, offset) {
             }
         }
         
+        // Add/subtract the offset if we're looking for next or previous week
         week += offset;
         
         if (week === undefined || stage === undefined) {
@@ -98,16 +111,24 @@ function sendCurrentWeek(message, offset) {
             return;
         }
         
-        let msg = constructMessage(stage, week, body);
+        let msg = constructMessage(stage, week, body, teamId);
         message.channel.send(msg);
     });
 }
 
-function constructMessage(stage, week, body) {
+function constructMessage(stage, week, body, teamId) {
     let msg = '**Stage ' + (stage + 1) + ', Week ' + (week + 1) + '**';
 
     let currentDay = -1;
     for (var m in body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches']) {
+        // maybe can remove != null
+        if (teamId) {
+            if (body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['id'] !== teamId &&
+                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['id'] !== teamId) {
+                continue;
+            }
+        }
+        
         // Every time the day of the week that the current match occurs on differs from the one before it, print the new one
         let matchDate = new Date(body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['startDate']);
         let matchDay = matchDate.getDay();
@@ -122,6 +143,9 @@ function constructMessage(stage, week, body) {
             body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'];
 
         msg = msg.concat(matchData);
+    }
+    if (msg === '**Stage ' + (stage + 1) + ', Week ' + (week + 1) + '**') {
+        msg = msg.concat('\n\nThat team doesn\'t play during that week.');
     }
     
     return msg;
