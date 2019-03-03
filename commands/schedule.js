@@ -53,8 +53,8 @@ function sendSpecifiedWeek(stage, week, message, teamId) {
     }, function(err, res, body) {
         if (err) {
             message.channel.send('Error: something went wrong while retrieving the schedule.')
-            console.log('error: ' + error);
-            console.log('response: ' + response.statusCode);           
+            console.log('error: ' + err);
+            console.log('response: ' + res.statusCode);           
         }
         
         // Make sure that the requested stage and week exist
@@ -85,8 +85,8 @@ function sendCurrentWeek(message, offset, teamId) {
     }, function (err, res, body) {
         if (err) {
             message.channel.send('Error: something went wrong while retrieving the schedule.')
-            console.log('error: ' + error);
-            console.log('response: ' + response.statusCode);           
+            console.log('error: ' + err);
+            console.log('response: ' + res.statusCode);           
         }
         
         // Iterate through each stage and figure out which one is current

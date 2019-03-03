@@ -22,7 +22,7 @@ client.on('message', (message) => {
             } else {
                 message.channel.send('Error: please enter a command');
             }
-            console.log(e);
+            console.log('Error: ' + e);
         }
     }
 });
