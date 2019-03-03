@@ -1,6 +1,6 @@
 const teams = require('../teams.json');
 
-exports.run = (params, message, client) => {   
+exports.run = (params, message) => {   
     let teamRequest = '';
 
     // Check to see if the message specifies a team
