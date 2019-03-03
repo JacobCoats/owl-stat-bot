@@ -5,7 +5,7 @@ const config = require('./config.json');
 client.on('message', (message) => {
     // Ignore messages sent by the bot
     if (message.author == client.user) {
-        return
+        return;
     }
     
     // Listen for commands
