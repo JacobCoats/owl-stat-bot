@@ -1,4 +1,4 @@
-exports.run = (params, message, client) => {
+exports.run = (params, message) => {
     // Decide which method to call based on the parameters provided
     if (params !== undefined && params.length > 0) {
         // Check if user is requesting schedule for a specific week
