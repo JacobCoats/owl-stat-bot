@@ -20,14 +20,14 @@ exports.run = (params, message) => {
     if (!teamRequest || teams[teamRequest]) {
         if (i === params.length) {
             // If there are no other parameters, send current week's schedule
-            sendCurrentWeekResults(message, 0, teams[teamRequest]);
+            sendCurrentWeek(message, 0, teams[teamRequest]);
         } else if (!isNaN(params[i])) {
             // If this parameter is a number, make sure that the next one is also a number, then return the schedule for that stage and week
             if (i + 1 <= params.length) {
                 if (!isNaN(params[i + 1])) {
                     let stage = params[i] - 1;
                     let week = params[i + 1] - 1;
-                    sendSpecifiedWeekResults(stage, week, message, teams[teamRequest]);
+                    sendSpecifiedWeek(stage, week, message, teams[teamRequest]);
                 } else {
                     message.channel.send('Error: improper weeks parameter');
                 }
@@ -36,14 +36,14 @@ exports.run = (params, message) => {
             }
         } else if (params[i] === 'previous') {
             // Pass -1 as offset if we're looking for previous week's schedule
-            sendCurrentWeekResults(message, -1, teams[teamRequest]);
+            sendCurrentWeek(message, -1, teams[teamRequest]);
         }
     } else {
         message.channel.send('Error: that team doesn\'t exist');
     }
 }
 
-function sendSpecifiedWeekResults(stage, week, message, teamId) {
+function sendSpecifiedWeek(stage, week, message, teamId) {
     const request = require('request');
     
     request.get({
@@ -72,7 +72,7 @@ function sendSpecifiedWeekResults(stage, week, message, teamId) {
 }
 
 // Offset will be added to the current week in order to return next or previous week's schedule
-function sendCurrentWeekResults(message, offset, teamId) {
+function sendCurrentWeek(message, offset, teamId) {
     const request = require('request');
     let stage;
     let week;
@@ -143,25 +143,18 @@ function constructMessage(stage, week, body, teamId) {
             msg = msg.concat('\n\n__' + days[currentDay] + ', ' + months[matchDate.getMonth()] + ' ' + matchDate.getDate() + ':__');
         }
         
+        let teamOneName = body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'];
+        let teamTwoName = body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name']
         let teamOneScore = body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['wins']['0'];
         let teamTwoScore = body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['wins']['1'];
         let matchData;
         
         if (teamOneScore > teamTwoScore) {
-            matchData = '\n' + 
-                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'] +
-                ' **' + teamOneScore + ' - ' + teamTwoScore + '** ' +
-                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'];
+            matchData = '\n' + teamOneName + ' **' + teamOneScore + ' - ' + teamTwoScore + '** ' + teamTwoName;
         } else if (teamOneScore < teamTwoScore) {
-            matchData = '\n' + 
-                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'] +
-                ' **' + teamTwoScore + ' - ' + teamOneScore + '** ' +
-                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'];
+            matchData = '\n' + teamTwoName + ' **' + teamTwoScore + ' - ' + teamOneScore + '** ' + teamOneName;
         } else {
-            matchData = '\n' + 
-                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'] +
-                ' **TBD** ' +
-                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'];
+            matchData = '\n' + teamOneName + ' **TBD** ' + teamTwoName;
         }
 
         msg = msg.concat(matchData);
