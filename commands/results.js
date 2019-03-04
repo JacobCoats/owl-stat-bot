@@ -7,7 +7,7 @@ exports.run = (params, message) => {
     // Check to see if the message specifies a team
     for (i = 0; i < params.length; i++) {
         // If the current parameter is one of these, then the team specification is over
-        if (!isNaN(params[i]) || params[i] === 'next' || params[i] === 'previous') {
+        if (!isNaN(params[i]) || params[i] === 'previous') {
             break;
         } else if (i == 0) {
             teamRequest += params[i];
@@ -20,33 +20,30 @@ exports.run = (params, message) => {
     if (!teamRequest || teams[teamRequest]) {
         if (i === params.length) {
             // If there are no other parameters, send current week's schedule
-            sendCurrentWeek(message, 0, teams[teamRequest]);
+            sendCurrentWeekResults(message, 0, teams[teamRequest]);
         } else if (!isNaN(params[i])) {
             // If this parameter is a number, make sure that the next one is also a number, then return the schedule for that stage and week
             if (i + 1 <= params.length) {
                 if (!isNaN(params[i + 1])) {
                     let stage = params[i] - 1;
                     let week = params[i + 1] - 1;
-                    sendSpecifiedWeek(stage, week, message, teams[teamRequest]);
+                    sendSpecifiedWeekResults(stage, week, message, teams[teamRequest]);
                 } else {
                     message.channel.send('Error: improper weeks parameter');
                 }
             } else {
                 message.channel.send('Error: please provide a weeks parameter');
             }
-        } else if (params[i] === 'next') {
-            // Pass 1 as offset if we're looking for next week's schedule since offset will be added to whichever week the method finds to be current
-            sendCurrentWeek(message, 1, teams[teamRequest]);
         } else if (params[i] === 'previous') {
             // Pass -1 as offset if we're looking for previous week's schedule
-            sendCurrentWeek(message, -1, teams[teamRequest]);
+            sendCurrentWeekResults(message, -1, teams[teamRequest]);
         }
     } else {
         message.channel.send('Error: that team doesn\'t exist');
     }
 }
 
-function sendSpecifiedWeek(stage, week, message, teamId) {
+function sendSpecifiedWeekResults(stage, week, message, teamId) {
     const request = require('request');
     
     request.get({
@@ -75,7 +72,7 @@ function sendSpecifiedWeek(stage, week, message, teamId) {
 }
 
 // Offset will be added to the current week in order to return next or previous week's schedule
-function sendCurrentWeek(message, offset, teamId) {
+function sendCurrentWeekResults(message, offset, teamId) {
     const request = require('request');
     let stage;
     let week;
@@ -101,6 +98,13 @@ function sendCurrentWeek(message, offset, teamId) {
                     break;
                 }
             }
+        }
+        
+        
+        // If no matches have taken place in the current week, send the previous week's results
+        if (body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches']['9']['wins']['0'] == 0 &&
+            body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches']['9']['wins']['1'] == 0) {
+            offset--;
         }
         
         // Add/subtract the offset if we're looking for next or previous week
@@ -138,11 +142,27 @@ function constructMessage(stage, week, body, teamId) {
             currentDay = matchDay;
             msg = msg.concat('\n\n__' + days[currentDay] + ', ' + months[matchDate.getMonth()] + ' ' + matchDate.getDate() + ':__');
         }
-
-        let matchData = '\n' + 
-            body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'] +
-            ' vs. ' + 
-            body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'];
+        
+        let teamOneScore = body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['wins']['0'];
+        let teamTwoScore = body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['wins']['1'];
+        let matchData;
+        
+        if (teamOneScore > teamTwoScore) {
+            matchData = '\n' + 
+                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'] +
+                ' **' + teamOneScore + ' - ' + teamTwoScore + '** ' +
+                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'];
+        } else if (teamOneScore < teamTwoScore) {
+            matchData = '\n' + 
+                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'] +
+                ' **' + teamTwoScore + ' - ' + teamOneScore + '** ' +
+                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'];
+        } else {
+            matchData = '\n' + 
+                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['1']['name'] +
+                ' **TBD** ' +
+                body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['competitors']['0']['name'];
+        }
 
         msg = msg.concat(matchData);
     }
