@@ -21,8 +21,8 @@ client.on('message', (message) => {
                 // Don't report commands that don't exist as this can clash with other bots if prefix is shared
             } else {
                 message.channel.send('Error: please check the console for more details');
+                console.log(e);
             }
-            console.log(e);
         }
     }
 });
