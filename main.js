@@ -17,12 +17,12 @@ client.on('message', (message) => {
             let commandFile = require(`./commands/${command}.js`);
             commandFile.run(params, message);
         } catch (e) {
-            if (command) {
+            if (e.code === 'MODULE_NOT_FOUND') {
                 // Don't report commands that don't exist as this can clash with other bots if prefix is shared
             } else {
-                message.channel.send('Error: please enter a command');
+                message.channel.send('Error: please check the console for more details');
             }
-            console.log('Error: ' + e);
+            console.log(e);
         }
     }
 });
