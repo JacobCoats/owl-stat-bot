@@ -18,7 +18,7 @@ client.on('message', (message) => {
             commandFile.run(params, message);
         } catch (e) {
             if (command) {
-                message.channel.send('Error: something went wrong. Check the console for more detail');
+                // Don't report commands that don't exist as this can clash with other bots if prefix is shared
             } else {
                 message.channel.send('Error: please enter a command');
             }
