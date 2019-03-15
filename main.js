@@ -8,21 +8,24 @@ client.on('message', (message) => {
         return;
     }
     
+    // Ignore messages that don't start with prefix
+    if (!message.content.startsWith(config.prefix)) {
+        return;
+    }
+    
     // Listen for commands
-    if (message.content.startsWith(config.prefix)) {
-        let params = message.content.substring(config.prefix.length).trim().split(' ');
-        let command = params.shift();
-        
-        try {
-            let commandFile = require(`./commands/${command}.js`);
-            commandFile.run(params, message);
-        } catch (e) {
-            if (e.code === 'MODULE_NOT_FOUND') {
-                // Don't report commands that don't exist as this can clash with other bots if prefix is shared
-            } else {
-                message.channel.send('Error: please check the console for more details');
-                console.log(e);
-            }
+    let params = message.content.substring(config.prefix.length).trim().split(' ');
+    let command = params.shift();
+
+    try {
+        let commandFile = require(`./commands/${command}.js`);
+        commandFile.run(params, message);
+    } catch (e) {
+        if (e.code === 'MODULE_NOT_FOUND') {
+            // Don't report commands that don't exist as this can clash with other bots if prefix is shared
+        } else {
+            message.channel.send('Error: please check the console for more details');
+            console.log(e);
         }
     }
 });
