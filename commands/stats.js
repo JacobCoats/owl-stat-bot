@@ -2,6 +2,7 @@ const teams = require('../teams.json');
 const request = require('request');
     
 exports.run = (params, message) => {
+    // Parse parameters
     if (params.length > 0) {
         let playerName = params[0].toLowerCase();
         
@@ -198,9 +199,11 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
         
         return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/5');
     }).then(function (mapFiveBody) {
+        // If map 5 wasn't played, skip it
         if (mapFiveBody['teams'] === undefined) {
             return;
         }
+        // Find the specified player and add their map stats to the total
         for (var t in mapFiveBody['teams']) {
             for (var p in mapFiveBody['teams'][`${t}`]['players']) {
                 if (mapFiveBody['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
@@ -217,6 +220,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
         }
     }).then(function () {
         // Construct and send the stats message
+        // Map time is given in milliseconds, so divide by 1000 before passing it to conversion
         let timePlayed = convertSeconds(stats[4] / 1000);
         let msg = 'Player: **' + name +
             '\n' + competitorOne + '** vs. **' + competitorTwo + '**' +
@@ -240,6 +244,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
 }
     
 function getRequest(url) {
+    // Make an http get request
     return new Promise(function (success, failure) {
         request({
             url: url, 
