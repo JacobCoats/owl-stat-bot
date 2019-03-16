@@ -21,5 +21,9 @@ results
   - !results {teamname} {s} {w} - returns a specific team's results for a specific week where {s} is stage number and {w} is week number  
   - !results {teamname} previous - returns a specific team's results for previous week  
   
+stats
+  - !stats {playername} - returns season stats for the specified player
+  - !stats {playername} {stage} {week} {opponent} - returns stats for the specified player from the specified match
+  
 standings  
   - !standings - return the current league standings  
