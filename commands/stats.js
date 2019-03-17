@@ -76,10 +76,7 @@ function sendGeneralStats(playerName, message) {
     });
 }
 
-function sendMatchStats(playerName, stage, week, opponent, message) {
-    // Measure execution time
-    let start = new Date();
-    
+function sendMatchStats(playerName, stage, week, opponent, message) {    
     let playerId;
     let playerTeam;
     let name;
@@ -196,8 +193,6 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             msg += '\nTime played: **' + timePlayed + '**';
             
             message.channel.send(msg);
-            let end = new Date() - start;
-            console.info('Execution time: %dms', end);
         });
     }).catch(function (err) {
         // Only send an error message if it wasn't already handled
