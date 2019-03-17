@@ -1,4 +1,5 @@
 const teams = require('../teams.json');
+const request = require('request');
 
 // Parse the parameters and call the appropriate method
 exports.run = (params, message) => {   
@@ -47,8 +48,6 @@ exports.run = (params, message) => {
 }
 
 function sendSpecifiedWeek(stage, week, message, teamId) {
-    const request = require('request');
-    
     request.get({
         url: 'https://api.overwatchleague.com/schedule', 
         json: true 
@@ -76,7 +75,6 @@ function sendSpecifiedWeek(stage, week, message, teamId) {
 
 // Offset will be added to the current week in order to return next or previous week's schedule
 function sendCurrentWeek(message, offset, teamId) {
-    const request = require('request');
     let stage;
     let week;
     let currentDate = new Date().getTime();

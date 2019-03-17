@@ -1,10 +1,11 @@
+const request = require('request');
+
 exports.run = (params, message) => {
     // Send the overall season standings
     sendLeagueStandings(message);
 }
 
 function sendLeagueStandings(message) {
-    const request = require('request');
     let msg = '**League Standings:**\n\n';
     
     request.get({
