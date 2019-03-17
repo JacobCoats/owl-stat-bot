@@ -1,7 +1,7 @@
 {
   "name": "owl-stat-bot",
   "version": "0.0.1",
-  "description": "A bot that will make my day.",
+  "description": "A Discord bot that provides Overwatch League stats and information.",
   "main": "main.js",
   "author": "Jacob Coats",
   "repository": {
