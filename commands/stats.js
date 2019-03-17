@@ -126,12 +126,14 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             return;
         }
     }).then(function() {
+        // Make API requests for map stats in parallel since they don't depend on each other
         let urls = ['https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/1',
             'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/2',
             'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/3',
             'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/4',
             'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/5'];
     
+        // Use async.map to make API requests asynchronously
         async.map(urls, function(url, callback) {
             request.get({
                 url: url, 
@@ -142,12 +144,14 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
                 }
 
                 let tempStats = [0, 0, 0, 0, 0];
+                // If the map wasn't played, return no stats
                 if (body['teams'] === undefined) {
                     return callback(null, tempStats);
                 }
                 for (var t in body['teams']) {
                     for (var p in body['teams'][`${t}`]['players']) {
                         if (body['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
+                            // If player is found, pass the player's stats to the callback
                             tempStats[0] += 
                                 (Math.round(body['teams'][`${t}`]['players'][`${p}`]['stats']['0']['value'] * 100) / 100);
                             tempStats[1] += body['teams'][`${t}`]['players'][`${p}`]['stats']['1']['value'];
@@ -162,6 +166,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
                         }
                     }
                 }
+                // If the player wasn't found, pass 0s for stats to the callback
                 callback(null, tempStats);
             });
         }, function(err, results) {
@@ -170,6 +175,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
                 console.log(err);      
             }
             
+            // Iterate over map stats and add them to the total
             for (var s in results) {
                 stats[0] += results[s][0];
                 stats[1] += results[s][1];
