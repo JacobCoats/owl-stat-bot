@@ -1,5 +1,6 @@
 const teams = require('../teams.json');
 const request = require('request');
+const async = require('async');
     
 exports.run = (params, message) => {
     // Parse parameters
@@ -76,6 +77,9 @@ function sendGeneralStats(playerName, message) {
 }
 
 function sendMatchStats(playerName, stage, week, opponent, message) {
+    // Measure execution time
+    let start = new Date();
+    
     let playerId;
     let playerTeam;
     let name;
@@ -124,43 +128,77 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             handled = true;
             return;
         }
-        
-        return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/1');
-    }).then(function (mapOneBody) {
-        // Find the specified player and add their map stats to the total
-        stats = processMap(mapOneBody, stats, playerId);
+    }).then(function() {
+        let urls = ['https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/1',
+            'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/2',
+            'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/3',
+            'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/4',
+            'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/5'];
     
-        return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/2');
-    }).then(function (mapTwoBody) {
-        stats = processMap(mapTwoBody, stats, playerId);
-        
-        return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/3');
-    }).then(function (mapThreeBody) {
-        stats = processMap(mapThreeBody, stats, playerId);
-        
-        return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/4');
-    }).then(function (mapFourBody) {
-        stats = processMap(mapFourBody, stats, playerId);
-        
-        return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/5');
-    }).then(function (mapFiveBody) {
-        stats = processMap(mapFiveBody, stats, playerId)
-    }).then(function () {
-        // Construct and send the stats message
-        // Map time is given in milliseconds, so divide by 1000 before passing it to conversion
-        let timePlayed = convertSeconds(stats[4] / 1000);
-        let msg = 'Player: **' + name +
-            '\n' + competitorOne + '** vs. **' + competitorTwo + '**' +
-            '\nStage ' + stage + ', Week ' + week +
-            '\n\nDamage: **' + (Math.round(stats[0] * 100) / 100) + '**' +
-            '\nDeaths: **' + stats[1] + '**' +
-            '\nEliminations: **' + stats[2] + '**';
-        if (stats[3] > 0) { 
-            msg += '\nHealing: **' + (Math.round(stats[3] * 100) / 100) + '**';
-        }
-        msg += '\nTime played: **' + timePlayed + '**';
-        
-        message.channel.send(msg); 
+        async.map(urls, function(url, callback) {
+            request.get({
+                url: url, 
+                json: true 
+            }, function ha(err, res, body) {
+                if (err) {
+                    return callback(err, []);
+                }
+
+                let tempStats = [0, 0, 0, 0, 0];
+                if (body['teams'] === undefined) {
+                    return callback(null, tempStats);
+                }
+                for (var t in body['teams']) {
+                    for (var p in body['teams'][`${t}`]['players']) {
+                        if (body['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
+                            tempStats[0] += 
+                                (Math.round(body['teams'][`${t}`]['players'][`${p}`]['stats']['0']['value'] * 100) / 100);
+                            tempStats[1] += body['teams'][`${t}`]['players'][`${p}`]['stats']['1']['value'];
+                            tempStats[2] += body['teams'][`${t}`]['players'][`${p}`]['stats']['2']['value'];
+                            if (body['teams'][`${t}`]['players'][`${p}`]['stats']['3'] !== undefined) {
+                                tempStats[3] += 
+                                    (Math.round(body['teams'][`${t}`]['players'][`${p}`]['stats']['3']['value'] * 100) / 100);
+                            }
+                            tempStats[4] += body['stats']['0']['value'];
+
+                            return callback(null, tempStats);
+                        }
+                    }
+                }
+                callback(null, tempStats);
+            });
+        }, function(err, results) {
+            if (err) {
+                message.channel.send('Error: something went wrong while retrieving the map stats.')
+                console.log(err);      
+            }
+            
+            for (var s in results) {
+                stats[0] += results[s][0];
+                stats[1] += results[s][1];
+                stats[2] += results[s][2];
+                stats[3] += results[s][3];
+                stats[4] += results[s][4];
+            }
+
+            // Construct and send the stats message
+            // Map time is given in milliseconds, so divide by 1000 before passing it to conversion
+            let timePlayed = convertSeconds(stats[4] / 1000);
+            let msg = 'Player: **' + name +
+                '\n' + competitorOne + '** vs. **' + competitorTwo + '**' +
+                '\nStage ' + stage + ', Week ' + week +
+                '\n\nDamage: **' + (Math.round(stats[0] * 100) / 100) + '**' +
+                '\nDeaths: **' + stats[1] + '**' +
+                '\nEliminations: **' + stats[2] + '**';
+            if (stats[3] > 0) { 
+                msg += '\nHealing: **' + (Math.round(stats[3] * 100) / 100) + '**';
+            }
+            msg += '\nTime played: **' + timePlayed + '**';
+            
+            message.channel.send(msg);
+            let end = new Date() - start;
+            console.info('Execution time: %dms', end);
+        });
     }).catch(function (err) {
         // Only send an error message if it wasn't already handled
         if (!handled) {
@@ -171,7 +209,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
 }
     
 function getRequest(url) {
-    // Make an http get request
+    // Make an http get request returning a promise
     return new Promise(function (success, failure) {
         request({
             url: url, 
@@ -184,27 +222,6 @@ function getRequest(url) {
             }
         });
     });
-}
-
-function processMap(body, stats, playerId) {
-    if (body['teams'] === undefined) {
-        return stats;
-    }
-    for (var t in body['teams']) {
-        for (var p in body['teams'][`${t}`]['players']) {
-            if (body['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
-                stats[0] += body['teams'][`${t}`]['players'][`${p}`]['stats']['0']['value'];
-                stats[1] += body['teams'][`${t}`]['players'][`${p}`]['stats']['1']['value'];
-                stats[2] += body['teams'][`${t}`]['players'][`${p}`]['stats']['2']['value'];
-                if (body['teams'][`${t}`]['players'][`${p}`]['stats']['3'] !== undefined) {
-                    stats[3] += body['teams'][`${t}`]['players'][`${p}`]['stats']['3']['value'];
-                }
-                stats[4] += body['stats']['0']['value'];
-                return stats;
-            }
-        }
-    }
-    return stats;
 }
 
 function findPlayerIndex(body, playerName) {
