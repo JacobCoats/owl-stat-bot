@@ -128,96 +128,23 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
         return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/1');
     }).then(function (mapOneBody) {
         // Find the specified player and add their map stats to the total
-        for (var t in mapOneBody['teams']) {
-            for (var p in mapOneBody['teams'][`${t}`]['players']) {
-                if (mapOneBody['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
-                    stats[0] += mapOneBody['teams'][`${t}`]['players'][`${p}`]['stats']['0']['value'];
-                    stats[1] += mapOneBody['teams'][`${t}`]['players'][`${p}`]['stats']['1']['value'];
-                    stats[2] += mapOneBody['teams'][`${t}`]['players'][`${p}`]['stats']['2']['value'];
-                    if (mapOneBody['teams'][`${t}`]['players'][`${p}`]['stats']['3'] !== undefined) {
-                        stats[3] += mapOneBody['teams'][`${t}`]['players'][`${p}`]['stats']['3']['value'];
-                    }
-                    stats[4] += mapOneBody['stats']['0']['value'];
-                    return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/2');
-                }
-            }
-        }
-        
+        stats = processMap(mapOneBody, stats, playerId);
+    
         return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/2');
     }).then(function (mapTwoBody) {
-        // Find the specified player and add their map stats to the total
-        for (var t in mapTwoBody['teams']) {
-            for (var p in mapTwoBody['teams'][`${t}`]['players']) {
-                if (mapTwoBody['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
-                    stats[0] += mapTwoBody['teams'][`${t}`]['players'][`${p}`]['stats']['0']['value'];
-                    stats[1] += mapTwoBody['teams'][`${t}`]['players'][`${p}`]['stats']['1']['value'];
-                    stats[2] += mapTwoBody['teams'][`${t}`]['players'][`${p}`]['stats']['2']['value'];
-                    if (mapTwoBody['teams'][`${t}`]['players'][`${p}`]['stats']['3'] !== undefined) {
-                        stats[3] += mapTwoBody['teams'][`${t}`]['players'][`${p}`]['stats']['3']['value'];
-                    }
-                    stats[4] += mapTwoBody['stats']['0']['value'];
-                    return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/3');
-                }
-            }
-        }
+        stats = processMap(mapTwoBody, stats, playerId);
         
         return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/3');
     }).then(function (mapThreeBody) {
-        // Find the specified player and add their map stats to the total
-        for (var t in mapThreeBody['teams']) {
-            for (var p in mapThreeBody['teams'][`${t}`]['players']) {
-                if (mapThreeBody['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
-                    stats[0] += mapThreeBody['teams'][`${t}`]['players'][`${p}`]['stats']['0']['value'];
-                    stats[1] += mapThreeBody['teams'][`${t}`]['players'][`${p}`]['stats']['1']['value'];
-                    stats[2] += mapThreeBody['teams'][`${t}`]['players'][`${p}`]['stats']['2']['value'];
-                    if (mapThreeBody['teams'][`${t}`]['players'][`${p}`]['stats']['3'] !== undefined) {
-                        stats[3] += mapThreeBody['teams'][`${t}`]['players'][`${p}`]['stats']['3']['value'];
-                    }
-                    stats[4] += mapThreeBody['stats']['0']['value'];
-                    return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/4');
-                }
-            }
-        }
+        stats = processMap(mapThreeBody, stats, playerId);
         
         return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/4');
     }).then(function (mapFourBody) {
-        // Find the specified player and add their map stats to the total
-        for (var t in mapFourBody['teams']) {
-            for (var p in mapFourBody['teams'][`${t}`]['players']) {
-                if (mapFourBody['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
-                    stats[0] += mapFourBody['teams'][`${t}`]['players'][`${p}`]['stats']['0']['value'];
-                    stats[1] += mapFourBody['teams'][`${t}`]['players'][`${p}`]['stats']['1']['value'];
-                    stats[2] += mapFourBody['teams'][`${t}`]['players'][`${p}`]['stats']['2']['value'];
-                    if (mapFourBody['teams'][`${t}`]['players'][`${p}`]['stats']['3'] !== undefined) {
-                        stats[3] += mapFourBody['teams'][`${t}`]['players'][`${p}`]['stats']['3']['value'];
-                    }
-                    stats[4] += mapFourBody['stats']['0']['value'];
-                    return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/5');
-                }
-            }
-        }
+        stats = processMap(mapFourBody, stats, playerId);
         
         return getRequest('https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/5');
     }).then(function (mapFiveBody) {
-        // If map 5 wasn't played, skip it
-        if (mapFiveBody['teams'] === undefined) {
-            return;
-        }
-        // Find the specified player and add their map stats to the total
-        for (var t in mapFiveBody['teams']) {
-            for (var p in mapFiveBody['teams'][`${t}`]['players']) {
-                if (mapFiveBody['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
-                    stats[0] += mapFiveBody['teams'][`${t}`]['players'][`${p}`]['stats']['0']['value'];
-                    stats[1] += mapFiveBody['teams'][`${t}`]['players'][`${p}`]['stats']['1']['value'];
-                    stats[2] += mapFiveBody['teams'][`${t}`]['players'][`${p}`]['stats']['2']['value'];
-                    if (mapFiveBody['teams'][`${t}`]['players'][`${p}`]['stats']['3'] !== undefined) {
-                        stats[3] += mapFiveBody['teams'][`${t}`]['players'][`${p}`]['stats']['3']['value'];
-                    }
-                    stats[4] += mapFiveBody['stats']['0']['value'];
-                    return;
-                }
-            }
-        }
+        stats = processMap(mapFiveBody, stats, playerId)
     }).then(function () {
         // Construct and send the stats message
         // Map time is given in milliseconds, so divide by 1000 before passing it to conversion
@@ -240,7 +167,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             message.channel.send('Error: something went wrong while retrieving the player\'s stats')
             console.log(err);  
         }
-    });   
+    });
 }
     
 function getRequest(url) {
@@ -257,6 +184,27 @@ function getRequest(url) {
             }
         });
     });
+}
+
+function processMap(body, stats, playerId) {
+    if (body['teams'] === undefined) {
+        return stats;
+    }
+    for (var t in body['teams']) {
+        for (var p in body['teams'][`${t}`]['players']) {
+            if (body['teams'][`${t}`]['players'][`${p}`]['esports_player_id'] === playerId) {
+                stats[0] += body['teams'][`${t}`]['players'][`${p}`]['stats']['0']['value'];
+                stats[1] += body['teams'][`${t}`]['players'][`${p}`]['stats']['1']['value'];
+                stats[2] += body['teams'][`${t}`]['players'][`${p}`]['stats']['2']['value'];
+                if (body['teams'][`${t}`]['players'][`${p}`]['stats']['3'] !== undefined) {
+                    stats[3] += body['teams'][`${t}`]['players'][`${p}`]['stats']['3']['value'];
+                }
+                stats[4] += body['stats']['0']['value'];
+                return stats;
+            }
+        }
+    }
+    return stats;
 }
 
 function findPlayerIndex(body, playerName) {
