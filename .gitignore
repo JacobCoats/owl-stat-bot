@@ -76,3 +76,6 @@ typings/
 
 # FuseBox cache
 .fusebox/
+
+# Guild settings
+guild-settings.json
