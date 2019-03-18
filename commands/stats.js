@@ -142,7 +142,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
 
                 let tempStats = [0, 0, 0, 0, 0];
                 // If the map wasn't played, return no stats
-                if (body['teams'] === undefined) {
+                if (body === undefined) {
                     return callback(null, tempStats);
                 }
                 for (var t in body['teams']) {
