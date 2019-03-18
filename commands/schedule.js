@@ -103,6 +103,13 @@ function sendCurrentWeek(message, offset, teamId) {
         
         // Add/subtract the offset if we're looking for next or previous week
         week += offset;
+        if (week > 4) {
+            week = 0;
+            stage += 1;
+        } else if (week < 0) {
+            week = 4;
+            stage -= 1;
+        }
         
         if (week === undefined || stage === undefined) {
             message.channel.send(

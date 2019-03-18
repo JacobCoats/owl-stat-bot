@@ -98,16 +98,19 @@ function sendCurrentWeek(message, offset, teamId) {
             }
         }
         
-        
         // If no matches have taken place in the current week, send the previous week's results
-        if (body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches']['9']['wins']['0'] == 0 &&
-            body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches']['9']['wins']['1'] == 0) {
+        if (body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches']['0']['wins']['0'] == 0 &&
+            body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches']['0']['wins']['1'] == 0) {
             offset--;
         }
         
         // Add/subtract the offset if we're looking for next or previous week
         week += offset;
-        
+        if (week < 0) {
+            week = 4;
+            stage -= 1;
+        }
+
         if (week === undefined || stage === undefined) {
             message.channel.send(
                 'There are no games during this week. If you want the schedule for a specific week, ' +
