@@ -84,7 +84,6 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
     let competitorTwo;
     let matchId = -1;
     let stats = [0, 0, 0, 0, 0];
-    let handled = false;
     
     // Use promises because each api call depends on the results of the previous
     // Use /stats/players instead of /players because the latter isn't sorted alphabetically by name so binary search doesn't work
@@ -97,14 +96,14 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             name = playerBody['data'][`${playerIndex}`]['name'];
         } else {
             // Send an error message and mark the error as handled
-            playerId = -1;
-            message.channel.send('Error: that player doesn\'t exist');
-            handled = true;
-            return;
+            throw 'player error';
         }
         
         return getRequest('https://api.overwatchleague.com/schedule')
     }).then(function (scheduleBody) {
+        if (teams[`${opponent}`] === playerTeam) {
+            throw 'opponent error';
+        }
         // Get the id for the match that the user specified
         let specifiedWeek = scheduleBody['data']['stages'][`${stage - 1}`]['weeks'][`${week - 1}`]['matches'];
         for (var m in specifiedWeek) {
@@ -121,9 +120,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
         }
         // If the match wasn't found, send an error message and mark the error as handled
         if (matchId === -1) {
-            message.channel.send('Error: the specified match wasn\'t found');
-            handled = true;
-            return;
+            throw 'match error';
         }
     }).then(function() {
         // Make API requests for map stats in parallel since they don't depend on each other
@@ -171,8 +168,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             });
         }, function(err, results) {
             if (err) {
-                message.channel.send('Error: something went wrong while retrieving the map stats.')
-                console.log(err);      
+                throw 'map error';
             }
             
             // Iterate over map stats and add them to the total
@@ -201,9 +197,16 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             message.channel.send(msg);
         });
     }).catch(function (err) {
-        // Only send an error message if it wasn't already handled
-        if (!handled) {
-            message.channel.send('Error: something went wrong while retrieving the player\'s stats')
+        if (err === 'player error') {
+            message.channel.send('Error: player not found');
+        } else if (err === 'match error') {
+            message.channel.send('Error: the specified match doesn\'t exist in the database');
+        } else if (err === 'opponent error') {
+            message.channel.send('Error: invalid opponent');
+        } else if (err === 'map error') {
+            message.channel.send('Error: something went wrong while retrieving the map stats');
+        } else {
+            message.channel.send('Error: an unhandled error occurred while retrieving the stats');
             console.log(err);  
         }
     });
