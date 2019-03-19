@@ -14,7 +14,7 @@ function changePrefix(message, newPrefix) {
     }
 
     guildSettings[message.guild.id].prefix = newPrefix;
-    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), function(err) {
+    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
         if (err) {
             console.log('Error changing server prefix in guildSettings.json: ' + err);
         } else {
