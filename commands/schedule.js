@@ -98,6 +98,7 @@ function sendCurrentWeek(message, offset, teamId) {
                     week = j;
                     break;
                 }
+                // If the current week is between stages, set the last week played to current
                 if (j === 4) {
                     if (currentDate > body['data']['stages'][`${i}`]['weeks'][`${j}`]['endDate'] &&
                         currentDate < body['data']['stages'][`${i + 1}`]['weeks'][`${0}`]['endDate']) {
