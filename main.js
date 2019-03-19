@@ -1,20 +1,79 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const fs = require('fs');
 const config = require('./config.json');
+const guildSettings = require('./guild-settings.json');
 
-client.on('message', (message) => {
+client.on("ready", function() {
+    // Update guild-settings.json to reflect any servers that the bot joined or left while it was offline
+    let change = false;
+    // If the bot is in any servers that aren't in guild-settings.json, add them
+    (client.guilds).forEach(function (value, key) {
+        if (!guildSettings[key]) {
+            guildSettings[key] = {
+                prefix: config.prefix
+            }
+            change = true;
+        }
+    });
+    // If guild-settings.json contains any servers that the bot isn't a member of, remove them
+    for (var id in guildSettings) {
+        if (!client.guilds.has(id)) {
+            delete guildSettings[id];
+            change = true;
+        }
+    }
+    if (change) {
+        fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), function(err) {
+            if (err) {
+                console.log('Error adding server to guildSettings.json: ' + err);
+            }
+        });
+    }
+});
+  
+
+client.on("guildCreate", function (guild) {
+    // If the bot joins a server, add it to guild-settings.json and initialize its settings to the default
+    if(!guildSettings[guild.id]) {
+        guildSettings[key] = {
+            prefix: config.prefix
+        }
+    }  
+
+    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), function(err) {
+        if (err) {
+            console.log('Error adding server to guildSettings.json: ' + err);
+        }
+    });
+});
+
+client.on("guildDelete", function(guild) {
+    // If the bot leaves a server, remove it from guild-settings.json
+    if (guildSettings[guild.id]) {
+        delete guildSettings[guild.id];
+    }
+
+    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), function(err) {
+        if (err) {
+            console.log('Error removing server from guildSettings.json: ' + err);
+        }
+    });
+})
+
+client.on('message', function (message) {
     // Ignore messages sent by the bot
     if (message.author.bot) {
         return;
     }
     
     // Ignore messages that don't start with prefix
-    if (!message.content.startsWith(config.prefix)) {
+    if (!message.content.startsWith(guildSettings[message.guild.id].prefix)) {
         return;
     }
     
     // Listen for commands
-    let params = message.content.substring(config.prefix.length).trim().split(' ');
+    let params = message.content.substring(guildSettings[message.guild.id].prefix.length).trim().split(' ');
     let command = params.shift();
 
     try {
