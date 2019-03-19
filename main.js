@@ -4,11 +4,11 @@ const fs = require('fs');
 const config = require('./config.json');
 const guildSettings = require('./guild-settings.json');
 
-client.on("ready", function() {
+client.on("ready", () => {
     // Update guild-settings.json to reflect any servers that the bot joined or left while it was offline
     let change = false;
     // If the bot is in any servers that aren't in guild-settings.json, add them
-    (client.guilds).forEach(function (value, key) {
+    (client.guilds).forEach((value, key) => {
         if (!guildSettings[key]) {
             guildSettings[key] = {
                 prefix: config.prefix
@@ -24,7 +24,7 @@ client.on("ready", function() {
         }
     }
     if (change) {
-        fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), function(err) {
+        fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
             if (err) {
                 console.log('Error adding server to guildSettings.json: ' + err);
             }
@@ -33,7 +33,7 @@ client.on("ready", function() {
 });
   
 
-client.on("guildCreate", function (guild) {
+client.on("guildCreate", (guild) => {
     // If the bot joins a server, add it to guild-settings.json and initialize its settings to the default
     if(!guildSettings[guild.id]) {
         guildSettings[key] = {
@@ -41,27 +41,27 @@ client.on("guildCreate", function (guild) {
         }
     }  
 
-    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), function(err) {
+    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
         if (err) {
             console.log('Error adding server to guildSettings.json: ' + err);
         }
     });
 });
 
-client.on("guildDelete", function(guild) {
+client.on("guildDelete", (guild) => {
     // If the bot leaves a server, remove it from guild-settings.json
     if (guildSettings[guild.id]) {
         delete guildSettings[guild.id];
     }
 
-    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), function(err) {
+    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
         if (err) {
             console.log('Error removing server from guildSettings.json: ' + err);
         }
     });
 })
 
-client.on('message', function (message) {
+client.on('message', (message) => {
     // Ignore messages sent by the bot
     if (message.author.bot) {
         return;

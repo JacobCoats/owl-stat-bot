@@ -11,7 +11,7 @@ function sendLeagueStandings(message) {
     request.get({
         url: 'https://api.overwatchleague.com/standings', 
         json: true 
-    }, function(err, res, body) {
+    }, (err, res, body) => {
         if (err) {
             message.channel.send('Error: something went wrong while retrieving the schedule.')
             console.log('error: ' + err);

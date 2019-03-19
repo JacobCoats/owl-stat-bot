@@ -48,7 +48,7 @@ function sendSpecifiedWeek(stage, week, message, teamId) {
     request.get({
         url: 'https://api.overwatchleague.com/schedule', 
         json: true 
-    }, function(err, res, body) {
+    }, (err, res, body) => {
         if (err) {
             message.channel.send('Error: something went wrong while retrieving the schedule.')
             console.log('error: ' + err);
@@ -79,7 +79,7 @@ function sendCurrentWeek(message, offset, teamId) {
     request.get({
         url: 'https://api.overwatchleague.com/schedule',
         json: true
-    }, function (err, res, body) {
+    }, (err, res, body) => {
         if (err) {
             message.channel.send('Error: something went wrong while retrieving the schedule.')
             console.log('error: ' + err);

@@ -34,7 +34,7 @@ function sendGeneralStats(playerName, message) {
     request.get({
         url: 'https://api.overwatchleague.com/stats/players', 
         json: true 
-    }, function(err, res, body) {
+    }, (err, res, body) => {
         if (err) {
             message.channel.send('Error: something went wrong while retrieving the player\'s stats.')
             console.log('error: ' + err);
@@ -87,7 +87,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
     
     // Use promises because each api call depends on the results of the previous
     // Use /stats/players instead of /players because the latter isn't sorted alphabetically by name so binary search doesn't work
-    getRequest('https://api.overwatchleague.com/stats/players').then(function (playerBody) {
+    getRequest('https://api.overwatchleague.com/stats/players').then((playerBody) => {
         // Get the player's id and their team's id
         let playerIndex = findPlayerIndex(playerBody, playerName);
         if (playerIndex >= 0) {
@@ -100,7 +100,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
         }
         
         return getRequest('https://api.overwatchleague.com/schedule')
-    }).then(function (scheduleBody) {
+    }).then((scheduleBody) => {
         if (teams[`${opponent}`] === playerTeam) {
             throw 'opponent error';
         }
@@ -122,7 +122,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
         if (matchId === -1) {
             throw 'match error';
         }
-    }).then(function() {
+    }).then(() => {
         // Make API requests for map stats in parallel since they don't depend on each other
         let urls = ['https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/1',
             'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/2',
@@ -131,11 +131,11 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/5'];
     
         // Use async.map to make API requests asynchronously
-        async.map(urls, function(url, callback) {
+        async.map(urls, (url, callback) => {
             request.get({
                 url: url, 
                 json: true 
-            }, function ha(err, res, body) {
+            }, (err, res, body) => {
                 if (err) {
                     return callback(err, []);
                 }
@@ -166,7 +166,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
                 // If the player wasn't found, pass 0s for stats to the callback
                 callback(null, tempStats);
             });
-        }, function(err, results) {
+        }, (err, results) => {
             if (err) {
                 throw 'map error';
             }
@@ -196,7 +196,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             
             message.channel.send(msg);
         });
-    }).catch(function (err) {
+    }).catch((err) => {
         if (err === 'player error') {
             message.channel.send('Error: player not found');
         } else if (err === 'match error') {
@@ -214,11 +214,11 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
     
 function getRequest(url) {
     // Make an http get request returning a promise
-    return new Promise(function (success, failure) {
+    return new Promise((success, failure) => {
         request({
             url: url, 
             json: true
-        }, function (err, res, body) {
+        }, (err, res, body) => {
             if (err) {
                 failure(err);
             } else {
