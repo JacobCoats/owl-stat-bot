@@ -27,3 +27,6 @@ stats
   
 standings  
   - !standings - return the current league standings  
+  
+settings
+  - !settings prefix {prefix} - (ADMIN ONLY) changes the prefix that the bot uses to denote commands on the current server
