@@ -11,9 +11,9 @@ exports.run = (params, message) => {
         if (!isNaN(params[i]) || params[i] === 'previous') {
             break;
         } else if (i == 0) {
-            teamRequest += params[i];
+            teamRequest += params[i].toLowerCase();
         } else {
-            teamRequest += ' ' + params[i];
+            teamRequest += ' ' + params[i].toLowerCase();
         }
     }
 

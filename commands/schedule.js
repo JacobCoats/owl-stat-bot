@@ -11,9 +11,9 @@ exports.run = (params, message) => {
         if (!isNaN(params[i]) || params[i] === 'next' || params[i] === 'previous') {
             break;
         } else if (i == 0) {
-            teamRequest += params[i];
+            teamRequest += params[i].toLowerCase();
         } else {
-            teamRequest += ' ' + params[i];
+            teamRequest += ' ' + params[i].toLowerCase();
         }
     }
 
@@ -102,8 +102,9 @@ function sendCurrentWeek(message, offset, teamId) {
                 if (j === 4) {
                     if (currentDate > body['data']['stages'][`${i}`]['weeks'][`${j}`]['endDate'] &&
                         currentDate < body['data']['stages'][`${i + 1}`]['weeks'][`${0}`]['endDate']) {
-                        stage = i;
-                        week = j;
+                        stage = i + 1;
+                        week = 0;
+                        break;
                     }
                 }
             }
