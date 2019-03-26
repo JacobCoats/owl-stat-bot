@@ -9,7 +9,7 @@ client.on("ready", () => {
     let change = false;
     // If the bot is in any servers that aren't in guild-settings.json, add them
     (client.guilds).forEach((value, key) => {
-        if (!guildSettings[key]) {
+        if (!guildSettings[key] && key !== undefined) {
             guildSettings[key] = {
                 prefix: config.prefix
             }
@@ -59,6 +59,11 @@ client.on("guildDelete", (guild) => {
             console.log('Error removing server from guildSettings.json: ' + err);
         }
     });
+})
+
+client.on('error', (error) => {
+    // Handle client error event
+    console.log(error);
 })
 
 client.on('message', (message) => {
