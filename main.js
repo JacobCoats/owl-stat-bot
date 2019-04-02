@@ -9,9 +9,10 @@ client.on("ready", () => {
     let change = false;
     // If the bot is in any servers that aren't in guild-settings.json, add them
     (client.guilds).forEach((value, key) => {
-        if (!guildSettings[key] && key !== undefined) {
+        if (key !== undefined && !guildSettings[key]) {
             guildSettings[key] = {
-                prefix: config.prefix
+                prefix: config.prefix,
+                disabled: []
             }
             change = true;
         }
@@ -36,8 +37,9 @@ client.on("ready", () => {
 client.on("guildCreate", (guild) => {
     // If the bot joins a server, add it to guild-settings.json and initialize its settings to the default
     if(!guildSettings[guild.id]) {
-        guildSettings[key] = {
-            prefix: config.prefix
+        guildSettings[guild.id] = {
+            prefix: config.prefix,
+            disabled: []
         }
     }  
 
@@ -80,6 +82,10 @@ client.on('message', (message) => {
     // Listen for commands
     let params = message.content.substring(guildSettings[message.guild.id].prefix.length).trim().split(' ');
     let command = params.shift();
+
+    if (guildSettings[message.guild.id].disabled.includes(command)) {
+        return;
+    }
 
     try {
         let commandFile = require(`./commands/${command}.js`);
