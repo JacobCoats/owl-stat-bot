@@ -83,6 +83,7 @@ client.on('message', (message) => {
     let params = message.content.substring(guildSettings[message.guild.id].prefix.length).trim().split(' ');
     let command = params.shift();
 
+    // Ignore the message if the specified command is disabled in the message's server
     if (guildSettings[message.guild.id].disabled.includes(command)) {
         return;
     }
