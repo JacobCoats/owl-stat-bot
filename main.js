@@ -83,7 +83,8 @@ client.on('message', (message) => {
     let params = message.content.substring(guildSettings[message.guild.id].prefix.length).trim().split(' ');
     let command = params.shift();
 
-    if (guildSettings[message.guild.id].disabled.includes(command)) {
+    if (guildSettings[message.guild.id].disabled.includes(command) && 
+        !message.member.permissions.has('ADMINISTRATOR')) {
         return;
     }
 
