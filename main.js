@@ -65,7 +65,7 @@ client.on("guildDelete", (guild) => {
 
 client.on('error', (error) => {
     // Handle client error event
-    console.log('Error in main:\n' + error);
+    console.log(error);
 })
 
 client.on('message', (message) => {
@@ -83,8 +83,8 @@ client.on('message', (message) => {
     let params = message.content.substring(guildSettings[message.guild.id].prefix.length).trim().split(' ');
     let command = params.shift();
 
-    if (guildSettings[message.guild.id].disabled.includes(command) && 
-        !message.member.permissions.has('ADMINISTRATOR')) {
+    // Ignore the message if the specified command is disabled in the message's server
+    if (guildSettings[message.guild.id].disabled.includes(command)) {
         return;
     }
 
