@@ -4,6 +4,7 @@
   "description": "A Discord bot that provides Overwatch League stats and information.",
   "main": "main.js",
   "author": "Jacob Coats",
+  "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/JacobCoats/owl-stat-bot"
