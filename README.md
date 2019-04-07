@@ -30,3 +30,11 @@ standings
   
 settings
   - !settings prefix {prefix} - (ADMIN ONLY) changes the prefix that the bot uses to denote commands on the current server
+  - !settings enable {commandname} - (ADMIN ONLY) enables a currently disabled command
+  - !settings disable {commandname} - (ADMIN ONLY) disables a currently enabled command for all users except administrators
+  
+help
+  - !help - provides a link to this documentation
+  
+info
+  - !info - provides some basic information about the bot
