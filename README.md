@@ -30,6 +30,7 @@ standings
   
 settings
   - !settings prefix {prefix} - (ADMIN ONLY) changes the prefix that the bot uses to denote commands on the current server
+<<<<<<< HEAD
   - !settings enable {commandname} - (ADMIN ONLY) enables a currently disabled command
   - !settings disable {commandname} - (ADMIN ONLY) disables a currently enabled command for all users except administrators
   
@@ -38,3 +39,7 @@ help
   
 info
   - !info - provides some basic information about the bot
+=======
+  - !settings enable {command} - (ADMIN ONLY) enable the specified command in the current server if it's disabled
+  - !settings disable {command} - (ADMIN ONLY) disable the specified command in the current server if it's enabled. Admins can still use disabled commands
+>>>>>>> parent of 9f31855... Revert "Merge branch 'master' of https://github.com/JacobCoats/owl-stat-bot"
