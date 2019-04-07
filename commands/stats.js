@@ -85,8 +85,8 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
     let matchId = -1;
     let stats = [0, 0, 0, 0, 0];
     
-    // Use promises because each api call depends on the results of the previous
-    // Use /stats/players instead of /players because the latter isn't sorted alphabetically by name so binary search doesn't work
+    // Use promises/then because each api call depends on the results of the previous
+    // Use the /stats/players endpoint instead of /players because the latter isn't sorted alphabetically by name so binary search doesn't work
     getRequest('https://api.overwatchleague.com/stats/players').then((playerBody) => {
         // Get the player's id and their team's id
         let playerIndex = findPlayerIndex(playerBody, playerName);
@@ -130,7 +130,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
             'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/4',
             'https://api.overwatchleague.com/stats/matches/' + matchId + '/maps/5'];
     
-        // Use async.map to make API requests asynchronously
+        // Use async.map to make API map requests simultaneously since they don't depend on one another
         async.map(urls, (url, callback) => {
             request.get({
                 url: url, 
