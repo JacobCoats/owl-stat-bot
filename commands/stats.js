@@ -188,7 +188,7 @@ function sendMatchStats(playerName, stage, week, opponent, message) {
                 '\nStage ' + stage + ', Week ' + week +
                 '\n\nDamage: **' + (Math.round(stats[0] * 100) / 100) + '**' +
                 '\nDeaths: **' + stats[1] + '**' +
-                '\nEliminations: **' + stats[2] + '**';
+                '\nEliminations: **' + (Math.round(stats[2] * 100) / 100) + '**';
             if (stats[3] > 0) { 
                 msg += '\nHealing: **' + (Math.round(stats[3] * 100) / 100) + '**';
             }
