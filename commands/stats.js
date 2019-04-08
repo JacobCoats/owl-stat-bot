@@ -14,7 +14,7 @@ exports.run = (params, message) => {
             if (!isNaN(params[1])) {
                 if (!isNaN(params[2])) {
                     if (teams[`${params[3].toLowerCase()}`] !== undefined) {
-                        sendMatchStats(playerName, params[1], params[2], params[3], message);
+                        sendMatchStats(playerName, params[1], params[2], params[3].toLowerCase(), message);
                     } else {
                         message.channel.send('Error: the opponent you specified doesn\'t exist');
                     }
