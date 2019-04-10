@@ -1,5 +1,5 @@
 const teams = require('../teams.json');
-const request = require('request');
+const OWLApi = require('../owl-api/OverwatchLeagueApi');
 
 // Parse the parameters and call the appropriate method
 exports.run = (params, message) => {   
@@ -48,29 +48,26 @@ exports.run = (params, message) => {
 }
 
 function sendSpecifiedWeek(stage, week, message, teamId) {
-    request.get({
-        url: 'https://api.overwatchleague.com/schedule', 
-        json: true 
-    }, (err, res, body) => {
-        if (err) {
-            message.channel.send('Error: something went wrong while retrieving the schedule.')
-            console.log('error: ' + err);
-            console.log('response: ' + res.statusCode);           
-        }
-        
-        // Make sure that the requested stage and week exist
-        if (stage > body['data']['stages'].length || stage < 0) {
-            message.channel.send("Error: that stage doesn't exist");
-            return;
-        }
-        if (week > body['data']['stages'][`${stage}`]['weeks'].length || week < 0) {
-            message.channel.send("Error: that week doesn't exist");
-            return;
-        }
-
-        let msg = constructMessage(stage, week, body, teamId);
-        message.channel.send(msg);
-    });
+    OWLApi.schedule().getSchedule()
+        .then(body => { 
+            // Make sure that the requested stage and week exist
+            if (stage > body['data']['stages'].length || stage < 0) {
+                message.channel.send("Error: that stage doesn't exist");
+                return;
+            }
+            if (week > body['data']['stages'][`${stage}`]['weeks'].length || week < 0) {
+                message.channel.send("Error: that week doesn't exist");
+                return;
+            }
+    
+            let msg = constructMessage(stage, week, body, teamId);
+            message.channel.send(msg);
+        }) // success
+        .catch(error => {
+            message.channel.send('Error: something went wrong while retrieving the schedule.');
+            console.log('Error:', error);
+        } // error
+    ); // getSchedule
 }
 
 // Offset will be added to the current week in order to return next or previous week's schedule
@@ -78,58 +75,55 @@ function sendCurrentWeek(message, offset, teamId) {
     let stage;
     let week;
     let currentDate = new Date().getTime();
-    
-    request.get({
-        url: 'https://api.overwatchleague.com/schedule',
-        json: true
-    }, (err, res, body) => {
-        if (err) {
-            message.channel.send('Error: something went wrong while retrieving the schedule.')
-            console.log('error: ' + err);
-            console.log('response: ' + res.statusCode);           
-        }
-        
-        // Iterate through each stage and figure out which one is current
-        for(i = 0; i < Object.keys(body['data']['stages']).length; i++) {
-            for (j = 0; j < Object.keys(body['data']['stages'][`${i}`]['weeks']).length; j++) {
-                if (currentDate > body['data']['stages'][`${i}`]['weeks'][`${j}`]['startDate'] &&
-                    currentDate < body['data']['stages'][`${i}`]['weeks'][`${j}`]['endDate']) {
-                    stage = i;
-                    week = j;
-                    break;
-                }
-                // If the current week is between stages, set the first week of the next stage to current
-                if (j === 4) {
-                    if (currentDate > body['data']['stages'][`${i}`]['weeks'][`${j}`]['endDate'] &&
-                        currentDate < body['data']['stages'][`${i + 1}`]['weeks'][`${0}`]['endDate']) {
-                        stage = i + 1;
-                        week = 0;
+
+    OWLApi.schedule().getSchedule()
+        .then(body => { 
+            // Iterate through each stage and figure out which one is current
+            for(i = 0; i < Object.keys(body['data']['stages']).length; i++) {
+                for (j = 0; j < Object.keys(body['data']['stages'][`${i}`]['weeks']).length; j++) {
+                    if (currentDate > body['data']['stages'][`${i}`]['weeks'][`${j}`]['startDate'] &&
+                        currentDate < body['data']['stages'][`${i}`]['weeks'][`${j}`]['endDate']) {
+                        stage = i;
+                        week = j;
                         break;
+                    }
+                    // If the current week is between stages, set the first week of the next stage to current
+                    if (j === 4) {
+                        if (currentDate > body['data']['stages'][`${i}`]['weeks'][`${j}`]['endDate'] &&
+                            currentDate < body['data']['stages'][`${i + 1}`]['weeks'][`${0}`]['endDate']) {
+                            stage = i + 1;
+                            week = 0;
+                            break;
+                        }
                     }
                 }
             }
-        }
-        
-        // Add/subtract the offset if we're looking for next or previous week
-        week += offset;
-        if (week > 4) {
-            week = 0;
-            stage += 1;
-        } else if (week < 0) {
-            week = 4;
-            stage -= 1;
-        }
-        
-        if (week === undefined || stage === undefined) {
-            message.channel.send(
-                'There are no games during this week. If you want the schedule for a specific week, ' +
-                'please include a stage and week number.');
-            return;
-        }
-        
-        let msg = constructMessage(stage, week, body, teamId);
-        message.channel.send(msg);
-    });
+
+            // Add/subtract the offset if we're looking for next or previous week
+            week += offset;
+            if (week > 4) {
+                week = 0;
+                stage += 1;
+            } else if (week < 0) {
+                week = 4;
+                stage -= 1;
+            }
+
+            if (week === undefined || stage === undefined) {
+                message.channel.send(
+                    'There are no games during this week. If you want the schedule for a specific week, ' +
+                    'please include a stage and week number.');
+                return;
+            }
+
+            let msg = constructMessage(stage, week, body, teamId);
+            message.channel.send(msg);
+        }) // success
+        .catch(error => {
+            message.channel.send('Error: something went wrong while retrieving the schedule.');
+            console.log('Error:', error);
+        } // error
+    ); // getSchedule
 }
 
 function constructMessage(stage, week, body, teamId) {
