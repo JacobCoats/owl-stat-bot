@@ -17,6 +17,7 @@ client.on("ready", () => {
             change = true;
         }
     });
+
     // If guild-settings.json contains any servers that the bot isn't a member of, remove them
     for (var id in guildSettings) {
         if (!client.guilds.has(id)) {
@@ -24,6 +25,14 @@ client.on("ready", () => {
             change = true;
         }
     }
+
+    for (var id in guildSettings) {
+        if (guildSettings[id].spoilers === undefined) {
+            guildSettings[id].spoilers = false;
+            change = true;
+        }
+    }
+
     if (change) {
         fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
             if (err) {

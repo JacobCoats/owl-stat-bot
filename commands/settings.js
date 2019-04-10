@@ -21,6 +21,8 @@ exports.run = (params, message) => {
         } else {
             message.channel.send("Error: Please specify a command to disable");
         }
+    } else if (params[0].toLowerCase() === 'spoilers') {
+        toggleSpoilers(message);
     }
 }
 
@@ -102,6 +104,31 @@ function disableCommand(message, commandToDisable) {
             console.log('Error disabling command in guildSettings.json: ' + err);
         } else {
             message.channel.send('Command disabled: ' + commandToDisable);
+        }
+    });
+}
+
+function toggleSpoilers(message) {
+    // If the user is not an administrator, they can't toggle spoilers
+    if (!message.member.permissions.has('ADMINISTRATOR')) {
+        message.channel.send('Error: only server administrators can disable commands');
+        return;
+    }
+
+    // Set spoilers to true if it's currently false, or false if it's currently true
+    if (guildSettings[message.guild.id].spoilers) {
+        guildSettings[message.guild.id].spoilers = false;
+    } else {
+        guildSettings[message.guild.id].spoilers = true;
+    }
+    let current = guildSettings[message.guild.id].spoilers ? 'true' : 'false';
+
+    // Write changes to guild-settings.json
+    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
+        if (err) {
+            console.log('Error toggling spoilers in guildSettings.json: ' + err);
+        } else {
+            message.channel.send('Spoilers set to: ' + current);
         }
     });
 }

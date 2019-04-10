@@ -32,6 +32,7 @@ settings
   - !settings prefix {prefix} - (ADMIN ONLY) changes the prefix that the bot uses to denote commands on the current server
   - !settings enable {commandname} - (ADMIN ONLY) enables a currently disabled command
   - !settings disable {commandname} - (ADMIN ONLY) disables a currently enabled command for all users except administrators
+  - !settings spoilers - (ADMIN ONLY) toggle whether or not match results are wrapped in spoiler tags
   
 help
   - !help - provides a link to this documentation

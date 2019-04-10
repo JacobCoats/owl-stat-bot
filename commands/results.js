@@ -1,5 +1,6 @@
 const teams = require('../teams.json');
 const request = require('request');
+const guildSettings = require('../guild-settings.json');
 
 // Parse the parameters and call the appropriate method
 exports.run = (params, message) => {   
@@ -65,7 +66,7 @@ function sendSpecifiedWeek(stage, week, message, teamId) {
             return;
         }
 
-        let msg = constructMessage(stage, week, body, teamId);
+        let msg = constructMessage(stage, week, body, teamId, message.guild.id);
         message.channel.send(msg);
     });
 }
@@ -126,12 +127,12 @@ function sendCurrentWeek(message, offset, teamId) {
             return;
         }
         
-        let msg = constructMessage(stage, week, body, teamId);
+        let msg = constructMessage(stage, week, body, teamId, message.guild.id);
         message.channel.send(msg);
     });
 }
 
-function constructMessage(stage, week, body, teamId) {
+function constructMessage(stage, week, body, teamId, guildId) {
     let msg = '**Stage ' + (stage + 1) + ', Week ' + (week + 1) + '**';
 
     let currentDay = -1;
@@ -158,10 +159,13 @@ function constructMessage(stage, week, body, teamId) {
         let teamTwoScore = body['data']['stages'][`${stage}`]['weeks'][`${week}`]['matches'][`${m}`]['wins']['1'];
         let matchData;
         
+        let spoilerTag = guildSettings[guildId].spoilers ? '||' : '';
         if (teamOneScore > teamTwoScore) {
-            matchData = '\n' + teamOneName + ' **' + teamOneScore + ' - ' + teamTwoScore + '** ' + teamTwoName;
+            matchData = 
+                '\n' + teamOneName + ' **' + spoilerTag + teamOneScore + ' - ' + teamTwoScore + spoilerTag + '** ' + teamTwoName;
         } else if (teamOneScore < teamTwoScore) {
-            matchData = '\n' + teamTwoName + ' **' + teamTwoScore + ' - ' + teamOneScore + '** ' + teamOneName;
+            matchData = 
+                '\n' + teamTwoName + ' **' + spoilerTag + teamTwoScore + ' - ' + teamOneScore + spoilerTag + '** ' + teamOneName;
         } else {
             matchData = '\n' + teamOneName + ' **TBD** ' + teamTwoName;
         }
