@@ -1,28 +1,37 @@
 const OWLApi = require('../owl-api/OverwatchLeagueApi');
 
-exports.run = (params, message) => {
-    // Send the overall season standings
-    sendLeagueStandings(message);
+class Standings {
+    
+    // public
+    description() {
+        return 'return the current league standings';
+    }
+
+    execute(message, params) {
+        const channel = message.channel;
+        OWLApi.standings().getStandings()
+            .then(data => {
+                channel.send(this.buildResponse(data))
+            }) // success
+            .catch(error => {
+                channel.send('Error: something went wrong while retrieving the schedule.');
+                console.log('Error:', error);
+            } // error
+        ); // getStandings
+    }
+
+    // private
+    buildResponse(data) {
+        let response = ['**League Standings:**\n'];
+        // iterate through each team, print their placment and record
+        for (const standingNo in data.ranks.content) {
+            const standing = data.ranks.content[standingNo];
+            const record = standing.records[0];
+            response.push(`${standing.placement}: ${standing.competitor.name} ` + 
+                          `** ${record.matchWin}-${record.matchLoss}**`);
+        }
+        return response.join('\n');
+    }
 }
 
-function sendLeagueStandings(message) {
-    OWLApi.standings().getStandings()
-        .then(body => {
-            let msg = '**League Standings:**\n\n';
-            // Iterate through each team, print their rank and record
-            for (i = 0; i < Object.keys(body['ranks']['content']).length; i++) {
-                msg = msg.concat((i + 1) + ': ' + 
-                                body['ranks']['content'][`${i}`]['competitor']['name'] + ' **' +
-                                body['ranks']['content'][`${i}`]['records']['0']['matchWin'] + 
-                                '-' + body['ranks']['content'][`${i}`]['records']['0']['matchLoss'] + 
-                                '**\n');
-            }
-
-            message.channel.send(msg);
-        }) // success
-        .catch(error => {
-            message.channel.send('Error: something went wrong while retrieving the schedule.');
-            console.log('Error:', error);
-        } // error
-    );
-}
+module.exports = Standings;

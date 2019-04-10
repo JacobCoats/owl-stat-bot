@@ -1,9 +1,11 @@
 const Discord = require('discord.js');
-const client = new Discord.Client();
 const fs = require('fs');
 const config = require('./config.json');
 const guildSettings = require('./guild-settings.json');
+const CommandManager = require('./commands/utils/CommandManager');
 
+const commandManager = new CommandManager();
+const client = new Discord.Client();
 client.on("ready", () => {
     // Update guild-settings.json to reflect any servers that the bot joined or left while it was offline
     let change = false;
@@ -31,8 +33,8 @@ client.on("ready", () => {
             }
         });
     }
+    commandManager.reloadSettings();
 });
-  
 
 client.on("guildCreate", (guild) => {
     // If the bot joins a server, add it to guild-settings.json and initialize its settings to the default
@@ -65,40 +67,11 @@ client.on("guildDelete", (guild) => {
 
 client.on('error', (error) => {
     // Handle client error event
-    console.log('Error in main:\n' + error);
+    console.log('Error in main:', error);
 })
 
 client.on('message', (message) => {
-    // Ignore messages sent by the bot
-    if (message.author.bot) {
-        return;
-    }
-    
-    // Ignore messages that don't start with prefix
-    if (!message.content.startsWith(guildSettings[message.guild.id].prefix)) {
-        return;
-    }
-    
-    // Listen for commands
-    let params = message.content.substring(guildSettings[message.guild.id].prefix.length).trim().split(' ');
-    let command = params.shift();
-
-    if (guildSettings[message.guild.id].disabled.includes(command) && 
-        !message.member.permissions.has('ADMINISTRATOR')) {
-        return;
-    }
-
-    try {
-        let commandFile = require(`./commands/${command}.js`);
-        commandFile.run(params, message);
-    } catch (e) {
-        if (e.code === 'MODULE_NOT_FOUND') {
-            // Don't report commands that don't exist as this can clash with other bots if prefix is shared
-        } else {
-            message.channel.send('Error: please check the console for more details');
-            console.log(e);
-        }
-    }
+    commandManager.processMessage(message);
 });
 
 client.login(config.token);
