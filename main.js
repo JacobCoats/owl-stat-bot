@@ -26,13 +26,6 @@ client.on("ready", () => {
         }
     }
 
-    for (var id in guildSettings) {
-        if (guildSettings[id].spoilers === undefined) {
-            guildSettings[id].spoilers = false;
-            change = true;
-        }
-    }
-
     if (change) {
         fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
             if (err) {
