@@ -16,6 +16,7 @@ Command | Result
 !schedule {teamname} previous | returns a specific team's schedule for previous week
   
 __Results:__
+
 Command | Result
 --------- | :-------
 !results | returns results for current week
@@ -26,17 +27,20 @@ Command | Result
 !results {teamname} previous | returns a specific team's results for previous week
   
 __Stats:__
+
 Command | Result
 --------- | :-------
 !stats {playername} | returns season stats for the specified player
 !stats {playername} {stage} {week} {opponent} | returns stats for the specified player from the specified match
   
 __Standings:__
+
 Command | Result
 --------- | :-------
 !standings | returns the current league standings
   
 __Settings, Help,  & Info:__
+
 Command | Result
 --------- | :-------
 !settings prefix {prefix} | _(ADMIN ONLY)_ changes the prefix that the bot uses to denote commands on the current server
