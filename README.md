@@ -2,7 +2,7 @@
 A Discord bot that provides Overwatch League stats and information  
   
 # Commands:
-## Schedule:
+### Schedule:
 
 Command | Result 
 --------- | :-------
@@ -16,7 +16,7 @@ Command | Result
 !schedule {teamname} previous | returns a specific team's schedule for previous week
 
 
-## Results:
+### Results:
 
 Command | Result
 --------- | :-------
@@ -28,7 +28,7 @@ Command | Result
 !results {teamname} previous | returns a specific team's results for previous week
 
 
-## Stats:
+### Stats:
 
 Command | Result
 --------- | :-------
@@ -36,14 +36,14 @@ Command | Result
 !stats {playername} {stage} {week} {opponent} | returns stats for the specified player from the specified match
 
 
-## Standings:
+### Standings:
 
 Command | Result
 --------- | :-------
 !standings | returns the current league standings
 
 
-## Settings, Help, & Info:
+### Settings, Help, & Info:
 
 Command | Result
 --------- | :-------
