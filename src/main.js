@@ -30,7 +30,7 @@ client.on("ready", () => {
     }
 
     if (change) {
-        fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
+        fs.writeFile('../guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
             if (err) {
                 console.log('Error adding server to guildSettings.json: ' + err);
             }
@@ -48,7 +48,7 @@ client.on("guildCreate", (guild) => {
         }
     }  
 
-    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
+    fs.writeFile('../guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
         if (err) {
             console.log('Error adding server to guildSettings.json: ' + err);
         }
@@ -61,7 +61,7 @@ client.on("guildDelete", (guild) => {
         delete guildSettings[guild.id];
     }
 
-    fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
+    fs.writeFile('../guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
         if (err) {
             console.log('Error removing server from guildSettings.json: ' + err);
         }

@@ -36,7 +36,7 @@ class Settings {
 
         // Change the server's prefix in guild-settings.json and write it to the file
         guildSettings[message.guild.id].prefix = newPrefix;
-        fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
+        fs.writeFile('../../guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
             if (err) {
                 console.log('Error changing server prefix in guildSettings.json: ' + err);
             } else {
@@ -69,7 +69,7 @@ class Settings {
         }
 
         // Write changes to guild-settings.json
-        fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
+        fs.writeFile('../../guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
             if (err) {
                 console.log('Error enabling command in guildSettings.json: ' + err);
             } else {
@@ -100,7 +100,7 @@ class Settings {
         }
 
         // Write changes to guild-settings.json
-        fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
+        fs.writeFile('../../guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
             if (err) {
                 console.log('Error disabling command in guildSettings.json: ' + err);
             } else {
@@ -125,7 +125,7 @@ class Settings {
         let current = guildSettings[message.guild.id].spoilers ? 'true' : 'false';
 
         // Write changes to guild-settings.json
-        fs.writeFile('./guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
+        fs.writeFile('../../guild-settings.json', JSON.stringify(guildSettings, null, 2), (err) => {
             if (err) {
                 console.log('Error toggling spoilers in guildSettings.json: ' + err);
             } else {
