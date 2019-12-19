@@ -1,4 +1,4 @@
-const request = require('request');
+const service = require('../owlapi-service.js');
 
 class Standings {
     execute(params, message) {
@@ -9,16 +9,7 @@ class Standings {
     sendLeagueStandings(message) {
         let msg = '**League Standings:**\n\n';
         
-        request.get({
-            url: 'https://api.overwatchleague.com/standings', 
-            json: true 
-        }, (err, res, body) => {
-            if (err) {
-                message.channel.send('Error: something went wrong while retrieving the schedule.')
-                console.log('error: ' + err);
-                console.log('response: ' + res.statusCode);           
-            }
-            
+        service.apiRequest('standings').then((body) => {
             // Iterate through each team, print their rank and record
             for (let i = 0; i < Object.keys(body['ranks']['content']).length; i++) {
                 msg = msg.concat((i + 1) + ': ' + 
@@ -29,6 +20,10 @@ class Standings {
             }
 
             message.channel.send(msg);
+        }).catch((err) => {
+            message.channel.send('Error: something went wrong while retrieving the schedule.')
+                console.log('error: ' + err);
+                console.log('response: ' + res.statusCode); 
         });
     }
 }
