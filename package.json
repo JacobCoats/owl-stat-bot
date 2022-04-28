@@ -10,7 +10,7 @@
     "url": "https://github.com/JacobCoats/owl-stat-bot"
   },
   "dependencies": {
-    "async": "^2.6.1",
+    "async": "^2.6.4",
     "discord.js": "^11.4.2",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.8"
